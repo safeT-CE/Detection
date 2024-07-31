@@ -20,11 +20,15 @@ if not cap.isOpened():
     exit()
 
 # without_helmet 클래스 감지 시간을 기록하기 위한 변수
-detection_start_time = None
+detection_start_time = None # 감지 시작 시간
+detection_time = 0 # 감지 끝 시간
 detected_class = None
-required_detection_time = 10  # 10초 설정
+required_detection_time = 10  # 10초 감지 유지 시 기록
+stoped_detection_time = 300 # 감지 후 쉬는 시간
 target_class_name = "Without Helmet"
 capture_done = False  # 캡쳐가 완료되었는지 확인하는 플래그
+first = True # 처음 감지인지 확인하는 변수
+count = 0 # 감지 횟수
 
 
 # 캡쳐한 이미지를 저장하는 디렉토리 생성
@@ -89,11 +93,12 @@ while True:
                 box = box.cpu().numpy()
                 conf = conf.cpu().numpy()
                 cls = int(cls.cpu().numpy())
-                
+                restart_time = time.time() - detection_time
+
                 if cls == 0 and conf >= 0.8:  # With Helmet의 확률이 0.8 이상인 경우
                     label = f'{class_names[cls]} {conf:.2f}'
                     plot_one_box(box, annotated_frame, label=label, color=(255, 0, 0), line_thickness=2)
-                if cls == 1 and conf > 0.5:  # Without Helmet의 확률이 0.5 미만인 경우 건너뜀
+                if cls == 1 and conf > 0.5 and int(stoped_detection_time - restart_time) < 0:  # Without Helmet의 확률이 0.5 미만인 경우 건너뜀
                     label = f'{class_names[cls]} {conf:.2f}'
                     plot_one_box(box, annotated_frame, label=label, color=(0, 0, 255), line_thickness=2)
 
@@ -106,7 +111,7 @@ while True:
                     # 문제 : 생성되는 바운딩 박스가 모두 유지되어야 함.
                     else:
                         elapsed_time = time.time() - detection_start_time
-                        if int(elapsed_time) > int(last_printed_time - detection_start_time):
+                        if int(elapsed_time) > int(last_printed_time - detection_start_time): 
                             last_printed_time = time.time()
                             #print(f"{detected_class} 감지 시간: {int(elapsed_time)}초")
                         
@@ -117,12 +122,16 @@ while True:
                             current_time = get_current_datetime()
                             cv2.imwrite(capture_filename, frame)
 
-                            # db에 저장
+                            # spring에 json형식 전달
                             detection_start_time = None
-                            #print(f"{detected_class}이(가) {required_detection_time}초 이상 감지되어 DB에 기록되었습니다.")
                             print(f"벌점 내역 : {detected_class}")
                             print(f"감지된 날짜 : {current_time}")
-                            print(f"캡쳐된 이미지 경로: {capture_filename}")
+                            print(f"캡쳐된 이미지 경로 : {capture_filename}")
+
+                            first = False
+                            if first == False:
+                                count+=1
+                            detection_time = time.time()
 
                     target_class_detected = True
 
@@ -133,7 +142,9 @@ while True:
     cv2.imshow('YOLOv8 Live Detection', annotated_frame)
 
     # 'q' 키를 누르면 종료
-    if cv2.waitKey(1) & 0xFF == ord('q'): break
+    if cv2.waitKey(1) & 0xFF == ord('q'): 
+        print(f"감지 횟수 : {count}")    
+        break
 
 # 자원 해제
 cap.release()
