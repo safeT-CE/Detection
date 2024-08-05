@@ -59,7 +59,7 @@ last_printed_time = 0
 
 # 시간
 def get_current_datetime():
-    return datetime.now().strftime("%m월%d일 %H시%M분%S초")
+    return datetime.now().strftime("%Y년 %m월 %d일 %H시 %M분")
 
 ##without_helmet 확률 조절
 def plot_one_box(x, img, color=None, label=None, line_thickness=None):
@@ -135,7 +135,9 @@ while True:
                             if not recorded:
                                 # 이미지 캡쳐
                                 capture_done = True  # 캡쳐 완료 플래그 설정
+                                #capture_filename = os.path.join(capture_dir, f"userId{userId}_penaltyId{penaltyId}.png")
                                 capture_filename = os.path.join(capture_dir, f"capture_{current_time}.png")
+                                #capture_filename = os.path.join(capture_dir)
                                 current_time_str = get_current_datetime()
                                 cv2.imwrite(capture_filename, frame)
 
