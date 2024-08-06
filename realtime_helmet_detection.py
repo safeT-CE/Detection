@@ -20,9 +20,6 @@ S3_REGION_NAME = secret_key.S3_REGION_NAME   # S3 버킷 버전
 # S3 연결 설정
 s3_client = s3_connection(AWS_ACCESS_KEY, AWS_SECRET_KEY)
 
-# S3 클라이언트 생성
-#s3 = s3_connection(AWS_ACCESS_KEY, AWS_SECRET_KEY, S3_REGION_NAME)
-
 # 모델 로드 : best_last.pt 경로에 맞게 변경 필요
 model = YOLO('C:\\Users\\SAMSUNG\\Desktop\\detection\\Detection\\best_last.pt')
 
@@ -42,15 +39,16 @@ detection_time = 0  # 감지 끝 시간
 detected_class = None
 required_detection_time = 10  # 10초 감지 유지 시 기록
 stoped_detection_time = 100  # 100초 후 감지 후 쉬는 시간
-target_class_name = "Without Helmet"
-capture_done = False  # 캡쳐가 완료되었는지 확인하는 플래그
 first = True  # 처음 감지인지 확인하는 변수
 count = 0  # 감지 횟수
-recorded = False  # 첫 번째 감지가 기록되었는지 여부
+record_done = False  # 첫 번째 감지가 기록되었는지 여부
+
+#target_class_name = "Without Helmet"
+#capture_done = False  # 캡쳐가 완료되었는지 확인하는 플래그
 
 
 # 캡쳐한 이미지를 저장하는 디렉토리 생성
-capture_dir = "output_img"
+capture_dir = "penalty/"
 if not os.path.exists(capture_dir):
     os.makedirs(capture_dir)
 
@@ -132,9 +130,9 @@ while True:
                             #print(f"{detected_class} 감지 시간: {int(elapsed_time)}초")
                         
                         if elapsed_time >= required_detection_time:
-                            if not recorded:
+                            if not record_done:
                                 # 이미지 캡쳐
-                                capture_done = True  # 캡쳐 완료 플래그 설정
+                                #capture_done = True  # 캡쳐 완료 플래그 설정
                                 #capture_filename = os.path.join(capture_dir, f"userId{userId}_penaltyId{penaltyId}.png")
                                 capture_filename = os.path.join(capture_dir, f"capture_{current_time}.png")
                                 #capture_filename = os.path.join(capture_dir)
@@ -150,7 +148,7 @@ while True:
                                 else:
                                     print("S3 연결 오류로 이미지 업로드 실패")
 
-                                recorded = True
+                                record_done = True
                                 detection_start_time = None
 
                                 # 삭제 예정
