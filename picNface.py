@@ -128,7 +128,7 @@ def process_images(license_image_path, face_image_path):
 
 
 # AWS S3 업로드
-def upload_to_s3(file_name, bucket, object_name=None):
+def upload_to_s3(user_id, file_name, bucket, object_name=None):
     
     # AWS S3 클라이언트 생성
     s3_client = s3_connection(AWS_ACCESS_KEY, AWS_SECRET_KEY)
@@ -137,7 +137,13 @@ def upload_to_s3(file_name, bucket, object_name=None):
         # 파일 업로드
         s3_client.upload_file(file_name, bucket, object_name or file_name)
         print(f"'{file_name}' has been uploaded to '{bucket}/{object_name}' successfully.")
-        return True
+        # 파일 URL 생성
+        if object_name is None:
+            object_name = file_name
+        
+        s3_url = f"https://{bucket}.s3.{S3_REGION_NAME}.amazonaws.com/{object_name}"
+        print(f"File URL: {s3_url}")        
+        return s3_url
     except FileNotFoundError:
         print(f"The file '{file_name}' was not found.")
         return False
@@ -167,10 +173,20 @@ if __name__ == "__main__":
     # 저장할 이름 형식 : face/userId_UUID
     random_uuid = uuid.uuid4()
     s3_object_name = f"face/user{user_id}_{random_uuid}.csv"
-    
-    if upload_to_s3(csv_file_path, bucket_name, s3_object_name):
-        # 업로드 후 로컬 CSV 파일 삭제
+    s3_url = upload_to_s3(user_id, csv_file_path, bucket_name, s3_object_name)
+
+    flask_url = "http://localhost:5000/send-identity"
+    if not s3_url:
+        print("S3 업로드 중 오류가 발생했습니다.")
+    else :
         os.remove(csv_file_path)
         print(f"로컬 CSV 파일 '{csv_file_path}'이 삭제되었습니다.")
-    else:
-        print("S3 업로드 중 오류가 발생했습니다.")
+        final_data = {
+            "userId" : user_id,
+            "identity" : s3_url
+        }
+        try:
+            response = requests.post(flask_url, json=final_data)
+            print("Flask 서버로 데이터 전송 완료:", response.status_code)
+        except requests.RequestException as e:
+            print("Flask 서버로의 요청 중 오류 발생:", e)
