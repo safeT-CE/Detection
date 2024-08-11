@@ -46,7 +46,7 @@ def detect_helmet(user_id):
     restart_time = 0
 
     # 캡쳐한 이미지를 저장하는 디렉토리 생성
-    capture_dir = f"penalty/"
+    capture_dir = "penalty/"
     if not os.path.exists(capture_dir):
         os.makedirs(capture_dir)
 
@@ -130,7 +130,8 @@ def detect_helmet(user_id):
                             if elapsed_time >= required_detection_time:
                                 if not record_done:
                                     # 이미지 캡쳐
-                                    capture_filename = os.path.join(capture_dir, f"user{user_id}_{current_time}.png")
+                                    file_name = f"user{user_id}_{current_time}.png"
+                                    capture_filename = os.path.join(capture_dir, file_name)
                                     current_time_str = get_current_datetime()
                                     cv2.imwrite(capture_filename, frame)
 
@@ -143,7 +144,7 @@ def detect_helmet(user_id):
                                     else:
                                         print("S3 연결 오류로 이미지 업로드 실패")
 
-                                    file_path = f"{capture_dir}user{user_id}_{current_time}.png"
+                                    file_path = f"{capture_dir}{file_name}"
                                     os.remove(file_path)    # 로컬 캡쳐 사진 삭제
                                     record_done = True
                                     detection_start_time = None
