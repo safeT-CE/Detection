@@ -3,3 +3,5 @@ __pycache__/s3.cpython-311.pyc
 __pycache__/secret_key.cpython-311.pyc
 test.py
 common.py
+test_helmet.py
+test_people.py

@@ -8,6 +8,7 @@ def receive_detection():
     try:
         # JSON 데이터 수신
         data = request.json
+        user_id = data['userId']
         print("Received data : ", data)
 
         # 데이터가 None이거나 예상된 유형이 아닐 경우
@@ -15,7 +16,7 @@ def receive_detection():
             return jsonify({"status": "failure", "message": "Invalid data received"}), 400
 
         # Spring boot로 데이터 전송
-        spring_boot_url = "http://localhost:8080/penalty?userId=1"  # userId 수정 필요
+        spring_boot_url = "http://localhost:8080/penalty?userId={}".format(user_id)  # userId 수정 필요
         
         try:
             response = requests.post(spring_boot_url, json=data)
