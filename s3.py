@@ -18,7 +18,7 @@ def s3_connection(aws_access_key_id, aws_secret_access_key, region_name="ap-nort
 
 def upload_to_s3(file_name, bucket, s3_client, object_name=None):
     try:
-        response = s3_client.upload_file(file_name, bucket, object_name or file_name)
+        response = s3_client.upload_file(file_name, bucket, object_name or file_name, ExtraArgs={'ContentType': 'image/png'})
         s3_url = f"https://{bucket}.s3.{s3_client.meta.region_name}.amazonaws.com/{object_name or file_name}"
         #print(f"S3에 이미지 업로드 성공: {s3_url}")
         return s3_url
