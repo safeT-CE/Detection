@@ -16,7 +16,7 @@ def receive_detection():
             return jsonify({"status": "failure", "message": "Invalid data received"}), 400
 
         # Spring boot로 데이터 전송
-        spring_boot_url = "http://localhost:8080/face/upload?userId={}".format(user_id)
+        spring_boot_url = "http://localhost:8080/face/upload/{}".format(user_id)
 
         try:
             response = requests.post(spring_boot_url, json=data)

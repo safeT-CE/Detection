@@ -111,7 +111,7 @@ def detect_helmet(user_id):
                     if cls == 0 and conf >= 0.8:  # With Helmet의 확률이 0.8 이상인 경우
                         label = f'{class_names[cls]} {conf:.2f}'
                         plot_one_box(box, annotated_frame, label=label, color=(255, 0, 0), line_thickness=2)
-                    if cls == 1 and conf > 0.5 and int(stoped_detection_time - restart_time) < 0:  # Without Helmet의 확률이 0.5 미만인 경우 건너뜀
+                    if cls == 1 and conf >= 0.5 and int(stoped_detection_time - restart_time) < 0:  # Without Helmet의 확률이 0.5 미만인 경우 건너뜀
                         label = f'{class_names[cls]} {conf:.2f}'
                         plot_one_box(box, annotated_frame, label=label, color=(0, 0, 255), line_thickness=2)
 

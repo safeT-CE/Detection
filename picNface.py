@@ -20,31 +20,61 @@ AWS_SECRET_KEY = secret_key.AWS_SECRET_KEY  # AWS 비밀 키
 S3_BUCKET_NAME = secret_key.S3_BUCKET_NAME  # S3 버킷 이름
 S3_REGION_NAME = secret_key.S3_REGION_NAME   # S3 버킷 버전
 
+def rotate_image_left_90(image):
+    # 이미지를 전치
+    transposed_image = cv2.transpose(image)
+    # 수평으로 플립
+    rotated_image = cv2.flip(transposed_image, flipCode=0)
+    return rotated_image
+
+
+def rotate_image_right_90(image):
+    # 이미지를 전치
+    transposed_image = cv2.transpose(image)
+    # 수평으로 플립
+    rotated_image = cv2.flip(transposed_image, flipCode=1)
+    return rotated_image
 
 # 동일성 체크
 def process_images(license_image_path, face_image_path):
-    
+
     use_camera = False  # False면 img, True면 camera
 
     # 신분증 이미지
-    faceimg = face_recognition.load_image_file(license_image_path)
-    faceimg = cv2.cvtColor(faceimg, cv2.COLOR_BGR2RGB)
+    licenseimg = face_recognition.load_image_file(license_image_path)
+    licenseimg = cv2.cvtColor(licenseimg, cv2.COLOR_BGR2RGB)
 
     # 테스트 이미지
     imgTest = face_recognition.load_image_file(face_image_path)
     imgTest = cv2.cvtColor(imgTest, cv2.COLOR_BGR2RGB)
 
-    # 기준 이미지 얼굴 위치와 인코딩
-    faceLoc = face_recognition.face_locations(faceimg)[0]
-    encodeRef = face_recognition.face_encodings(faceimg)[0]
-    cv2.rectangle(faceimg, (faceLoc[3], faceLoc[0]), (faceLoc[1], faceLoc[2]), (255, 0, 255), 2)
+    # 사진 재조정
+    licenseimg = rotate_image_right_90(licenseimg)
+    imgTest = rotate_image_left_90(imgTest)
+
+    # 사진 확인용 (나중 삭제)
+    cv2.imshow("license Image", cv2.cvtColor(licenseimg, cv2.COLOR_RGB2BGR))
+    cv2.waitKey(0)  # 이미지가 화면에 표시되도록 대기
+    cv2.destroyAllWindows()  # 창 닫기
+    
+    cv2.imshow("Face Image", cv2.cvtColor(imgTest, cv2.COLOR_RGB2BGR))
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    
+    face_locations = face_recognition.face_locations(licenseimg)
+    print("Face locations:", face_locations)
+
+    faceLoc = face_recognition.face_locations(licenseimg)[0]
+    
+    encodeRef = face_recognition.face_encodings(licenseimg)[0]
+    cv2.rectangle(licenseimg, (faceLoc[3], faceLoc[0]), (faceLoc[1], faceLoc[2]), (255, 0, 255), 2)
 
     if use_camera:
         # 카메라 캡처 시작
         cap = cv2.VideoCapture(0)
 
     # CSV 파일 존재 여부 확인 및 초기화 : 본인 경로로 재설정 필요
-    csv_filename = 'C:/Users/SAMSUNG/Desktop/FaceRecognition_JE/face_rec_data/face_features.csv'
+    csv_filename = 'C:/Users/SAMSUNG/Desktop/detection/Detection/face_rec_data/face_features.csv'
     if not os.path.exists(csv_filename):
         # CSV 파일 생성 및 헤더 추가
         df = pd.DataFrame(columns=[f'feature_{i}' for i in range(len(encodeRef))])
@@ -95,17 +125,17 @@ def process_images(license_image_path, face_image_path):
         # N초가 지나면 유사도 값 저장(현재는 10초로 설정)
         if time.time() - start_time >= 10:
             if best_face_encoding is not None:
-                if best_min_distance <= 0.40:#유사도 N이하면 얼굴 데이터 csv로 저장(현재는 0.4로 설정)
+                if best_min_distance <= 0.60:#유사도 N이하면 얼굴 데이터 csv로 저장(현재는 0.6로 설정)
                     print(f"Face recognized with distance: {best_min_distance}. Features saved.")
                     # CSV 파일에 특징값 저장
                     df = pd.read_csv(csv_filename)
                     new_row = pd.DataFrame([best_face_encoding], columns=df.columns)
-                                    
                     if not new_row.isna().all().all():  # 새로운 행이 비어 있거나 모든 값이 NA가 아닌지 확인
                         df = pd.concat([df, new_row], ignore_index=True)
                         df.to_csv(csv_filename, index=False)
                 else:
                     print("동일인이 아니라고 판별되어 얼굴 데이터를 저장하지 않았습니다.")
+                    return False;
             break
 
         # 결과 보여주기
@@ -114,7 +144,7 @@ def process_images(license_image_path, face_image_path):
         else:
             cv2.imshow('Test Image', imgTest)
 
-        cv2.imshow('Reference Face', faceimg)
+        cv2.imshow('Reference Face', licenseimg)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
@@ -131,8 +161,10 @@ def process_images(license_image_path, face_image_path):
 def upload_to_s3(user_id, file_name, bucket, object_name=None):
     
     # AWS S3 클라이언트 생성
-    s3_client = s3_connection(AWS_ACCESS_KEY, AWS_SECRET_KEY)
+    s3_client = s3_connection(AWS_ACCESS_KEY, AWS_SECRET_KEY)  
 
+    #if s3_client is False :
+        # 동일인이 아닐 경우라고 판단하는 경우 그냥 특정 오류를 발생하고 싶음
     try:
         # 파일 업로드
         s3_client.upload_file(file_name, bucket, object_name or file_name)
@@ -160,7 +192,7 @@ if __name__ == "__main__":
 
     license_image_path = sys.argv[1]
     face_image_path = sys.argv[2]
-    user_id = sys.argv[3]
+    user_id = sys.argv[3]    
 
     # 이미지 처리 및 CSV 파일 생성
     csv_file_path = process_images(license_image_path, face_image_path)
