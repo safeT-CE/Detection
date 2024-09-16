@@ -123,6 +123,7 @@ def process_images(license_image_path, face_image_path):
                     if not new_row.isna().all().all():  # 새로운 행이 비어 있거나 모든 값이 NA가 아닌지 확인
                         df = pd.concat([df, new_row], ignore_index=True)
                         df.to_csv(csv_filename, index=False)
+                    return csv_filename, "success";
                 else:
                     print("동일인이 아니라고 판별되어 얼굴 데이터를 저장하지 않았습니다.")
                     return "Not the same person", "not same";
@@ -173,6 +174,11 @@ def error_request(user_id, samePerson):
         "identity" : "",
         "samePerson" : samePerson
     }
+    try:
+        response = requests.post(flask_url, json=final_data)
+        print("Flask 서버로 데이터 전송 완료:", response.status_code)
+    except requests.RequestException as e:
+        print("Flask 서버로의 요청 중 오류 발생:", e)
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
@@ -186,7 +192,7 @@ if __name__ == "__main__":
     # 이미지 처리 및 CSV 파일 생성
     csv_file_path, process_success = process_images(license_image_path, face_image_path)
 
-    if not process_success:
+    if process_success != "success":
         print(f"이미지 처리 실패: {csv_file_path}")
         error_request(user_id, process_success)
         sys.exit(1)
@@ -202,7 +208,7 @@ if __name__ == "__main__":
     s3_object_name = f"face/user{user_id}_{random_uuid}.csv"
     s3_url, process_success = upload_to_s3(user_id, csv_file_path, bucket_name, s3_object_name)
 
-    if not process_success:
+    if process_success != "success":
         print(f"S3 업로드 실패: {s3_url}")
         error_request(user_id, process_success)
         sys.exit(1)
