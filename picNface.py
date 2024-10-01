@@ -53,13 +53,13 @@ def process_images(license_image_path, face_image_path):
     imgTest = rotate_image_left_90(imgTest)
 
     # 사진 확인용 (나중 삭제)
-    cv2.imshow("license Image", cv2.cvtColor(licenseimg, cv2.COLOR_RGB2BGR))
-    cv2.waitKey(0)  # 이미지가 화면에 표시되도록 대기
-    cv2.destroyAllWindows()  # 창 닫기
+    # cv2.imshow("license Image", cv2.cvtColor(licenseimg, cv2.COLOR_RGB2BGR))
+    # cv2.waitKey(0)  # 이미지가 화면에 표시되도록 대기
+    # cv2.destroyAllWindows()  # 창 닫기
     
-    cv2.imshow("Face Image", cv2.cvtColor(imgTest, cv2.COLOR_RGB2BGR))
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow("Face Image", cv2.cvtColor(imgTest, cv2.COLOR_RGB2BGR))
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
     
     # 신분증 사진에서 얼굴을 찾지 못했을 때
     face_locations = face_recognition.face_locations(licenseimg)
