@@ -30,7 +30,7 @@ def detect_people(user_id) :
     detection_time = 0  # 감지 끝 시간
     detected_class = None
     required_detection_time = 3  # 10초 감지 유지 시 기록
-    stoped_detection_time = 10  # 100초 후 감지 후 쉬는 시간
+    stoped_detection_time = 5  # 100초 후 감지 후 쉬는 시간
     count = 0  # 감지 횟수
     record_done = False  # 첫 번째 감지가 기록되었는지 여부
 
@@ -81,7 +81,7 @@ def detect_people(user_id) :
             if len(results) > 0 and results[0].boxes is not None and person_count >= 2: #and not capture_done:
                 if detection_start_time is None:
                     detection_start_time = time.time()
-                    detected_class = "More than two people on board"
+                    detected_class = "2인 이상 탑승"
                 else:
                     elapsed_time = time.time() - detection_start_time
                     if elapsed_time >= required_detection_time:

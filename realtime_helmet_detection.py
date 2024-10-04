@@ -167,7 +167,7 @@ def detect_helmet(user_id):
             flask_url = "http://localhost:5000/send-detection"
             final_data = {
                 "userId": user_id,
-                "content": detected_class,
+                "content": "헬멧 미착용",
                 "photo": s3_url if s3_url else "N/A",
                 "date": current_time_str,
                 "map": {
