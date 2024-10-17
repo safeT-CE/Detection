@@ -11,7 +11,7 @@ import secret_key
 
 app = Flask(__name__)
 
-def detect_face(user_id):
+def detect_face(user_id, faceFile):
     AWS_ACCESS_KEY = secret_key.AWS_ACCESS_KEY
     AWS_SECRET_KEY = secret_key.AWS_SECRET_KEY
     S3_BUCKET_NAME = secret_key.S3_BUCKET_NAME
@@ -40,7 +40,7 @@ def detect_face(user_id):
     if use_camera:
         cap = cv2.VideoCapture(0)
     else:
-        test_image_path = 'face_pics/ai_hub_data/age/people1 (3).jpg'
+        test_image_path = faceFile
         imgTest = face_recognition.load_image_file(test_image_path)
         imgTest = cv2.cvtColor(imgTest, cv2.COLOR_BGR2RGB)
 
@@ -118,18 +118,15 @@ def detect_face(user_id):
 def face_detection():
     data = request.json
     user_id = data.get('userId')
-    identity = data.get('identity')
     faceFile = data.get('faceFile')
     
     if not user_id:
         return jsonify({"error": "User ID is required"}), 400
-    elif not identity:
-        return jsonify({"error": "User identity is required"}), 400
     elif not faceFile:
         return jsonify({"error": "User faceFile is required"}), 400
     
 
-    result = detect_face(user_id)
+    result = detect_face(user_id, faceFile)
     return jsonify(result)
 
 if __name__ == "__main__":

@@ -34,3 +34,13 @@ def upload_to_s3(file_name, bucket, s3_client, object_name=None):
     except Exception as e:
         print(f"파일 업로드 실패: {str(e)}")
         return None
+
+
+def download_from_s3(bucket, object_name, file_path, s3_client):
+    try:
+        s3_client.download_file(bucket, object_name, file_path)
+        print(f"Successfully downloaded {object_name} from S3 to {file_path}.")
+        return True
+    except Exception as e:
+        print(f"파일 다운로드 실패: {str(e)}")
+        return False
