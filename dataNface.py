@@ -11,6 +11,17 @@ import secret_key
 
 app = Flask(__name__)
 
+def find_user_csv_in_s3(s3_client, bucket_name, user_id):
+    prefix = f'face/user{user_id}_'  # 파일 이름 패턴 (예: face/user20_)
+    response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+
+    # 응답에서 파일 이름 찾기
+    if 'Contents' in response:
+        for obj in response['Contents']:
+            if obj['Key'].endswith('.csv'):  # CSV 파일만 필터링
+                return obj['Key']  # 파일 이름 반환
+    return None  # 파일을 찾지 못하면 None 반환
+
 def detect_face(user_id, faceFile):
     AWS_ACCESS_KEY = secret_key.AWS_ACCESS_KEY
     AWS_SECRET_KEY = secret_key.AWS_SECRET_KEY
@@ -18,8 +29,17 @@ def detect_face(user_id, faceFile):
     s3_client = s3_connection(AWS_ACCESS_KEY, AWS_SECRET_KEY)
 
     use_camera = False  # False면 img, True면 camera
-    csv_filename = 'face_features.csv'
-    local_csv_path = os.path.join('temp', csv_filename)  # CSV 파일 다운로드 위치 설정
+    
+    # S3에서 user_id에 맞는 CSV 파일을 찾음
+    csv_filename = find_user_csv_in_s3(s3_client, S3_BUCKET_NAME, user_id)
+    if not csv_filename:
+        return {"error": f"No CSV file found for user {user_id}"}, 404  # 파일이 없으면 에러 반환
+
+    local_csv_path = os.path.join('temp', csv_filename.split('/')[-1])  # 로컬 경로에 저장될 이름 설정
+
+
+    # csv_filename = 'face/face_features.csv'
+    # local_csv_path = os.path.join('temp', csv_filename)  # CSV 파일 다운로드 위치 설정
 
     # temp 폴더가 없으면 생성
     if not os.path.exists('temp'):
@@ -43,6 +63,11 @@ def detect_face(user_id, faceFile):
         test_image_path = faceFile
         imgTest = face_recognition.load_image_file(test_image_path)
         imgTest = cv2.cvtColor(imgTest, cv2.COLOR_BGR2RGB)
+
+    # 이미지를 OpenCV로 표시
+    cv2.imshow('Image', imgTest)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
     start_time = time.time()
     min_distance = float('inf')
