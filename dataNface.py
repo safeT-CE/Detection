@@ -5,14 +5,14 @@ import face_recognition
 import pandas as pd
 import os
 import time
-import requests
-from s3 import s3_connection, upload_to_s3, download_from_s3
+from s3 import s3_connection, download_from_s3
 import secret_key
+from io import BytesIO
 
 app = Flask(__name__)
 
 def find_user_csv_in_s3(s3_client, bucket_name, user_id):
-    prefix = f'face/user{user_id}_'  # 파일 이름 패턴 (예: face/user20_)
+    prefix = f'face/user{user_id}_'
     response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
 
     # 응답에서 파일 이름 찾기
@@ -22,24 +22,32 @@ def find_user_csv_in_s3(s3_client, bucket_name, user_id):
                 return obj['Key']  # 파일 이름 반환
     return None  # 파일을 찾지 못하면 None 반환
 
+
+def rotate_image_left_90(image):
+    # 이미지를 전치
+    transposed_image = cv2.transpose(image)
+    # 수평으로 플립
+    rotated_image = cv2.flip(transposed_image, flipCode=0)
+    return rotated_image
+
+
 def detect_face(user_id, faceFile):
     AWS_ACCESS_KEY = secret_key.AWS_ACCESS_KEY
     AWS_SECRET_KEY = secret_key.AWS_SECRET_KEY
     S3_BUCKET_NAME = secret_key.S3_BUCKET_NAME
     s3_client = s3_connection(AWS_ACCESS_KEY, AWS_SECRET_KEY)
 
-    use_camera = False  # False면 img, True면 camera
-    
+    # 확인용 (삭제 가능)
+    print("python dataNface : id " + user_id)
+    print("python dataNface : face file " + faceFile.filename)
+
+
     # S3에서 user_id에 맞는 CSV 파일을 찾음
     csv_filename = find_user_csv_in_s3(s3_client, S3_BUCKET_NAME, user_id)
     if not csv_filename:
-        return {"error": f"No CSV file found for user {user_id}"}, 404  # 파일이 없으면 에러 반환
+        return {"error": f"No CSV file found for user {user_id}"},
 
-    local_csv_path = os.path.join('temp', csv_filename.split('/')[-1])  # 로컬 경로에 저장될 이름 설정
-
-
-    # csv_filename = 'face/face_features.csv'
-    # local_csv_path = os.path.join('temp', csv_filename)  # CSV 파일 다운로드 위치 설정
+    local_csv_path = os.path.join('temp', csv_filename.split('/')[-1])
 
     # temp 폴더가 없으면 생성
     if not os.path.exists('temp'):
@@ -53,34 +61,37 @@ def detect_face(user_id, faceFile):
 
     saved_encodings = df.values
 
+    # 삭제 가능
     result_dir = 'face_rec_results'
     if not os.path.exists(result_dir):
         os.makedirs(result_dir)
 
-    if use_camera:
-        cap = cv2.VideoCapture(0)
-    else:
-        test_image_path = faceFile
-        imgTest = face_recognition.load_image_file(test_image_path)
+    try:
+        image_stream = BytesIO(faceFile.read())
+        imgTest = face_recognition.load_image_file(image_stream)
+        imgTest = rotate_image_left_90(imgTest)
         imgTest = cv2.cvtColor(imgTest, cv2.COLOR_BGR2RGB)
+    except Exception as e:
+        return {"error": f"Failed to load image: {str(e)}"}, 500
 
     # 이미지를 OpenCV로 표시
-    cv2.imshow('Image', imgTest)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    if imgTest is None:
+        return {"error": "Image file could not be loaded"}, 500
+    
+    # 이미지 OpenCV로 확인
+    # if imgTest is not None:
+    #     cv2.imshow('Image', imgTest)
+    #     cv2.waitKey(0)
+    #     cv2.destroyAllWindows()
+    # else:
+    #     return {"error": "Image file could not be loaded"}, 500
 
     start_time = time.time()
     min_distance = float('inf')
     best_match_text = ""
 
     while True:
-        if use_camera:
-            ret, frame = cap.read()
-            if not ret:
-                break
-            rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        else:
-            rgb_frame = imgTest
+        rgb_frame = imgTest
 
         faceLocTest = face_recognition.face_locations(rgb_frame)
         encodeTest = face_recognition.face_encodings(rgb_frame, faceLocTest)
@@ -100,59 +111,61 @@ def detect_face(user_id, faceFile):
                     else:
                         best_match_text = "동일인이 아닙니다."
 
-                if use_camera:
-                    cv2.rectangle(frame, (left, top), (right, bottom), (255, 0, 255), 2)
-                else:
-                    cv2.rectangle(imgTest, (left, top), (right, bottom), (255, 0, 255), 2)
+                cv2.rectangle(imgTest, (left, top), (right, bottom), (255, 0, 255), 2)
 
         if time.time() - start_time >= 5:
             break
-
-        if use_camera:
-            cv2.imshow('Camera', frame)
-        else:
-            cv2.imshow('Test Image', imgTest)
+        cv2.imshow('Test Image', imgTest)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     print(f"최종 결과: {best_match_text} (유사도 거리: {min_distance})")
+    
+    # 삭제 가능
     result_image_path = os.path.join(result_dir, 'result_image.jpg')
-    if use_camera:
-        cv2.imwrite(result_image_path, frame)
-    else:
-        cv2.imwrite(result_image_path, cv2.cvtColor(imgTest, cv2.COLOR_RGB2BGR))
+    cv2.imwrite(result_image_path, cv2.cvtColor(imgTest, cv2.COLOR_RGB2BGR))
 
-    if s3_client:
-        s3_url = upload_to_s3(result_image_path, S3_BUCKET_NAME, s3_client)
-        if s3_url:
-            print(f"S3에 이미지 업로드 성공 : {s3_url}")
-        else:
-            print("S3에 이미지 업로드 실패")
+    # 이미지 처리 후 삭제
+    if os.path.exists(result_image_path):
+        try:
+            os.remove(result_image_path)
+            print(f"이미지 파일 {result_image_path} 삭제 성공")
+        except Exception as e:
+            print(f"이미지 파일 삭제 중 오류 발생: {str(e)}")
     else:
-        print("S3 연결 오류로 이미지 업로드 실패")
+        print(f"이미지 파일 {result_image_path}이 존재하지 않습니다.")
+    
+    #다운로드한 CSV 파일 삭제
+    if os.path.exists(local_csv_path):
+        try:
+            os.remove(local_csv_path)
+            print(f"CSV 파일 {local_csv_path} 삭제 성공")
+        except Exception as e:
+            print(f"CSV 파일 삭제 중 오류 발생: {str(e)}")
+    else:
+        print(f"CSV 파일 {local_csv_path}이 존재하지 않습니다.")
+    
+
 
     return {
         "userId": user_id,
         "result": best_match_text,
-        "distance": min_distance,
-        "image_url": s3_url if s3_url else "N/A"
+        "distance": min_distance
     }
 
 @app.route('/face-detection', methods=['POST'])
 def face_detection():
-    data = request.json
-    user_id = data.get('userId')
-    faceFile = data.get('faceFile')
+    user_id = request.form.get('userId')
+    face_file = request.files.get('faceFile')
     
     if not user_id:
         return jsonify({"error": "User ID is required"}), 400
-    elif not faceFile:
+    elif not face_file:
         return jsonify({"error": "User faceFile is required"}), 400
     
-
-    result = detect_face(user_id, faceFile)
+    result = detect_face(user_id, face_file)
     return jsonify(result)
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    app.run(port=5000, debug=True)
