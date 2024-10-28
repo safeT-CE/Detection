@@ -24,9 +24,7 @@ def find_user_csv_in_s3(s3_client, bucket_name, user_id):
 
 
 def rotate_image_left_90(image):
-    # 이미지를 전치
     transposed_image = cv2.transpose(image)
-    # 수평으로 플립
     rotated_image = cv2.flip(transposed_image, flipCode=0)
     return rotated_image
 
@@ -37,16 +35,10 @@ def detect_face(user_id, faceFile):
     S3_BUCKET_NAME = secret_key.S3_BUCKET_NAME
     s3_client = s3_connection(AWS_ACCESS_KEY, AWS_SECRET_KEY)
 
-    # 확인용 (삭제 가능)
-    print("python dataNface : id " + user_id)
-    print("python dataNface : face file " + faceFile.filename)
-
-
     # S3에서 user_id에 맞는 CSV 파일을 찾음
     csv_filename = find_user_csv_in_s3(s3_client, S3_BUCKET_NAME, user_id)
     if not csv_filename:
-        return {"error": f"No CSV file found for user {user_id}"},
-
+        return jsonify({"error": f"No CSV file found for user {user_id}"}), 500
     local_csv_path = os.path.join('temp', csv_filename.split('/')[-1])
 
     # temp 폴더가 없으면 생성
@@ -57,8 +49,7 @@ def detect_face(user_id, faceFile):
     if download_from_s3(S3_BUCKET_NAME, csv_filename, local_csv_path, s3_client):  # CSV 파일 다운로드
         df = pd.read_csv(local_csv_path)  # 다운로드 한 CSV 파일 읽기
     else:
-        return {"error": "Failed to download CSV file from S3"}, 500
-
+        return jsonify({"error": "Failed to download CSV file from S3"}), 500
     saved_encodings = df.values
 
     # 삭제 가능
@@ -72,20 +63,12 @@ def detect_face(user_id, faceFile):
         imgTest = rotate_image_left_90(imgTest)
         imgTest = cv2.cvtColor(imgTest, cv2.COLOR_BGR2RGB)
     except Exception as e:
-        return {"error": f"Failed to load image: {str(e)}"}, 500
-
+        return jsonify({"error": f"Failed to load image: {str(e)}"}), 500
+        
     # 이미지를 OpenCV로 표시
     if imgTest is None:
-        return {"error": "Image file could not be loaded"}, 500
-    
-    # 이미지 OpenCV로 확인
-    # if imgTest is not None:
-    #     cv2.imshow('Image', imgTest)
-    #     cv2.waitKey(0)
-    #     cv2.destroyAllWindows()
-    # else:
-    #     return {"error": "Image file could not be loaded"}, 500
-
+        return jsonify({"error": "Image file could not be loaded"}), 500
+        
     start_time = time.time()
     min_distance = float('inf')
     best_match_text = ""
@@ -98,6 +81,7 @@ def detect_face(user_id, faceFile):
 
         if not encodeTest:
             print("No face found in the frame.")
+            best_match_text = "얼굴이 인식되지 않습니다."
         else:
             for (top, right, bottom, left), face_encoding in zip(faceLocTest, encodeTest):
                 faceDis = face_recognition.face_distance(saved_encodings, face_encoding)
@@ -106,7 +90,7 @@ def detect_face(user_id, faceFile):
 
                 if current_min_distance < min_distance:
                     min_distance = current_min_distance
-                    if min_distance <= 0.4:
+                    if min_distance <= 0.6:
                         best_match_text = "동일인입니다."
                     else:
                         best_match_text = "동일인이 아닙니다."
@@ -146,8 +130,6 @@ def detect_face(user_id, faceFile):
     else:
         print(f"CSV 파일 {local_csv_path}이 존재하지 않습니다.")
     
-
-
     return {
         "userId": user_id,
         "result": best_match_text,

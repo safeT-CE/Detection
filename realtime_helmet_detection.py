@@ -23,7 +23,7 @@ def detect_helmet(user_id):
     s3_client = s3_connection(AWS_ACCESS_KEY, AWS_SECRET_KEY)
 
     # 모델 로드 : best_last.pt 경로에 맞게 변경 필요
-    model = YOLO('C:\\Users\\SAMSUNG\\Desktop\\detection\\Detection\\best_last.pt')
+    model = YOLO('C:\\Users\\SAMSUNG\\Desktop\\detection\\Detection\\best_helmet.pt')
 
     ## 클래스 이름 설정
     class_names = ['With Helmet', 'Without Helmet']
