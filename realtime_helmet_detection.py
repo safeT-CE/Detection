@@ -5,7 +5,6 @@ from datetime import datetime
 from ultralytics import YOLO
 import os
 import requests
-import json
 import sys
 
 # s3.py 모듈을 임포트
@@ -171,8 +170,8 @@ def detect_helmet(user_id):
                 "photo": s3_url if s3_url else "N/A",
                 "date": current_time_str,
                 "map": {
-                    "latitude": 37.3,               # 임시 위도, 경도
-                    "longitude": 127.457
+                    "latitude": 37.655408362010185,               # 임시 위도, 경도
+                    "longitude": 127.0480327594718
                 },
                 "detectionCount": count  # 전송할 데이터 추가
             }

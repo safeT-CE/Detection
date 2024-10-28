@@ -5,7 +5,6 @@ import sys
 import time
 from datetime import datetime
 import os
-import json
 import requests
 
 # s3.py 모듈을 임포트
@@ -123,8 +122,8 @@ def detect_people(user_id) :
                 "photo": s3_url if s3_url else "N/A",
                 "date": current_time_str,
                 "map": {
-                    "latitude": 37.12233,               # 임시 위도, 경도
-                    "longitude": 127.472
+                    "latitude": 37.655408362010185,               # 임시 위도, 경도
+                    "longitude": 127.0480327594718
                 },
                 "detectionCount": count  # 전송할 데이터 추가
             }
