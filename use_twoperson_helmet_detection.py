@@ -4,7 +4,7 @@ import random
 import cv2
 import numpy as np
 
-# YOLO 모델 로드
+# YOLO 모델 로드 : 수정 필요
 model_helmet = YOLO('C:\\Users\\SAMSUNG\\Desktop\\detection\\Detection\\best_helmet.pt')
 model_people = YOLO('C:/Users/SAMSUNG/Desktop/detection/Detection/yolov8n.pt')
 
