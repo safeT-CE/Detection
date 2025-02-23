@@ -12,21 +12,19 @@
 헬멧을 착용하지 않았을 경우, 사람이 2명 이상 탑승한 것이 감지되었을 경우, 이미지로 캡쳐가 진행되고 감지된 시간, 위치, 감지 이유가 벌점에 기록되게 됩니다.<br><br>
 
 ## 🖥️ AI 모델 및 사용 데이터셋
-> AI 모델<br>
-> **YOLOv8** 사용
+**AI 모델 : YOLOv8 사용**
 
-<br>
+### Helmet detection Dataset
+**class : with_helmet, without_helmet**<br>
 
-Helmet detection Dataset : **Roboflow 제공 여러 데이터셋과 직접 라벨링한 데이터 [3595개]** </br>
-데이터셋 - https://app.roboflow.com/university-q1syp/helmet_detection2_final/models </br></br>
-Two or More occupants detection : **yolov8n** (기본 데이터셋 사용)
+사용한 데이터셋 : **Roboflow 제공 여러 데이터셋과 직접 라벨링한 데이터 [3595개]** </br>
+데이터셋 - https://app.roboflow.com/university-q1syp/helmet_detection2_final/models
+
+### Two or More occupants detection Dataset
+사용한 데이터셋 : **yolov8n** (기본 데이터셋 사용)
 <br><br>
 
-## Helmet detection Dataset
-**class : with_helmet, without_helmet**
-<br><br>
-
-### 최종 학습 데이터 정밀도, 재현율 및 mAP 수치 
+## 최종 학습 데이터 정밀도, 재현율 및 mAP 수치 
 ### 1️⃣ "With Helmet" (헬멧을 착용한 경우)
 | 지표        | 값          |
 |------------|------------|
