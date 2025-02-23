@@ -1,7 +1,7 @@
 # 🚴 Object Detection
 ### Helmet detection and two or more occupants detection by 효영
 **헬멧 감지와 2인 이상 탑승 감지**
-</br>
+</br><br>
 
 ## 📚 프로젝트 소개
 헬멧 착용 감지와 2인 이상 탑승하였다는 것을 감지하기 위해 YOLOv8 모델을 이용하여 학습을 진행하였다.<br>
