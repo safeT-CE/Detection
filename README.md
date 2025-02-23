@@ -14,12 +14,12 @@
 ## 🖥️ AI 모델 및 사용 데이터셋
 #### AI 모델 : YOLOv8 사용
 
-#### ◾ Helmet detection Dataset
+#### ▪️ Helmet detection Dataset
 **class : With_helmet과 Without_helmet**<br>
 사용한 데이터셋 : **Roboflow 제공 여러 데이터셋과 직접 라벨링한 데이터 [3595개]** </br>
 데이터셋 - https://app.roboflow.com/university-q1syp/helmet_detection2_final/models
 
-#### ◾ Two or More occupants detection Dataset
+#### ▪️ Two or More occupants detection Dataset
 사용한 데이터셋 : **yolov8n** (기본 데이터셋 사용)
 <br><br>
 
