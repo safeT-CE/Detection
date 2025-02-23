@@ -1,5 +1,5 @@
-# 🚴 Object Detection by효영
-### Helmet detection and two or more occupants detection
+# 🚴 Object Detection
+### Helmet detection and two or more occupants detection by 효영
 #### 헬멧 감지와 2인 이상 탑승 감지
 </br>
 
