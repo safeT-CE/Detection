@@ -3,13 +3,22 @@
 #### 헬멧 감지와 2인 이상 탑승 감지
 </br>
 
+## 📚 프로젝트 소개
+헬멧 착용 감지와 2인 이상 탑승하였다는 것을 감지하기 위해 YOLOv8 모델을 이용하여 학습을 진행하였다.<br>
+헬멧 착용을 감지하기 위해서 roboflow에서 제공하는 데이터셋과 추가로 라벨링한 데이터셋을 합하여 약 3600개의 데이터셋을 사용하였습니다.<br>
+헬멧 착용 감지 클래스는 With_helmet과 Without_helmet으로 나누어 학습을 진행하였습니다.<br> 
+또한, 추가로 각 클래스의 감지율 조건 추가하여 정확도를 높였다.<br> 
+<br><br>
+2인 이상 탑승을 감지하기 위해 yolov8n의 기본 데이터셋을 사용하였고, 사람이 2명 이상 감지되었을 때 결과를 출력할 있도록 하였습니다.<br>
+헬멧을 착용하지 않았을 경우, 사람이 2명 이상 탑승한 것이 감지되었을 경우, 이미지로 캡쳐가 진행되고 감지된 시간, 위치, 감지 이유가 벌점에 기록되게 됩니다.<br><br>
+
 ## 🖥️ AI 모델 및 사용 데이터셋
 > AI 모델<br>
 > **YOLOv8** 사용
 
 <br><br>
 Helmet detection Dataset : **Roboflow 제공 여러 데이터셋과 직접 라벨링한 데이터 [3595개]** </br>
-https://app.roboflow.com/university-q1syp/helmet_detection2_final/models </br></br>
+데이터셋 - https://app.roboflow.com/university-q1syp/helmet_detection2_final/models </br></br>
 Two or More occupants detection : **yolov8n** (기본 데이터셋 사용)
 <br>
 
