@@ -6,8 +6,8 @@
 ## 🖥️ AI 모델 및 사용 데이터셋
 > AI 모델<br>
 > **YOLOv8** 사용
-</br></br>
 
+<br><br>
 Helmet detection Dataset : **Roboflow 제공 여러 데이터셋과 직접 라벨링한 데이터 [3595개]** </br>
 https://app.roboflow.com/university-q1syp/helmet_detection2_final/models </br></br>
 Two or More occupants detection : **yolov8n** (기본 데이터셋 사용)
@@ -28,7 +28,7 @@ Two or More occupants detection : **yolov8n** (기본 데이터셋 사용)
 
 Precision : 75.1%에서 98.8%로 높임 <br>
 Recall : 63.1%에서 97.7%로 높임  <br>
-*비교한 이전 학습 : epochs값 20, 데이터셋 약1000개 <br>
+*비교한 이전 학습 : epochs값 20, 데이터셋 약1000개 <br><br>
 
 ### 2️⃣ "Without Helmet" (헬멧을 착용하지 않은 경우)
 | 지표        | 값          |
