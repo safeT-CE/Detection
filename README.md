@@ -48,3 +48,8 @@ Precision : 73.1%에서 96.7%로 높임 <br>
 Recall : 30.1%에서 94.7%로 높임  <br>
 *mAP50-95은 16.2%로 거의 맞추지 못하였지만, 최종 학습 데이터 테스트는 83.9%의 결과를 보임.
 <br>
+
+## 🖥️ 화면 구성 설명
+|          헬멧 & 2인 감지          |          벌점 기록 페이지 : 헬멧 감지          |          벌점 기록 페이지 : 2인 감지          |
+|:--------------------------:|:--------------------------:|:--------------------------:|
+| <img width="250" src="https://github.com/user-attachments/assets/c5b8308d-679a-479a-8944-c0699f0b03c3"/> | <img width="250" src="https://github.com/user-attachments/assets/2ec45c4a-ab53-4984-8b5e-9f7e61d56963"/> | <img width="250" src="https://github.com/user-attachments/assets/192f4ba6-0f4c-4e92-9a8a-0b92766d15e2"/> |
