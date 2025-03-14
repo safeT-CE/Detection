@@ -1,6 +1,8 @@
 # 🚴 Object Detection
 ### Helmet detection and two or more occupants detection by 효영
-**헬멧 감지와 2인 이상 탑승 감지**
+**헬멧 감지와 2인 이상 탑승 감지**<br>
+<img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https://github.com/safeT-CE/Detection&count_bg=%23FFC107&title_bg=%23555555&icon=github.svg&icon_color=%23FFFFFF&title=hits&edge_flat=false" />
+
 </br><br>
 
 ## 📚 프로젝트 소개
